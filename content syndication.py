@@ -10,14 +10,7 @@ import pandas as pd
 #two ways to read excel file in python
 #xl = pd.ExcelFile("C:\\Users\\Qi Yi\\Desktop\inSegment - Arbor Networks - Weekly Lead Report 7.7.2016.xlsx")
 #leads = xl.parse("All Leads") #sheet name
-leads = pd.read_excel('C:\\Users\\Qi Yi\\Desktop\inSegment - Arbor Networks - Weekly Lead Report 7.7.2016.xlsx', sheetname="All Leads")
-
-unique = leads.drop_duplicates()
-len(unique) #16153
-
-flag = unique[unique.duplicated(["Email Address"], keep=False)]
-flag = flag.sort_values(["Email Address"], ascending=True)
-flag.to_excel("C:\\Users\\Qi Yi\\Desktop\\flag.xlsx")     
+leads = pd.read_excel('C:\\Users\\Qi Yi\\Desktop\inSegment - Arbor Networks - Weekly Lead Report 7.7.2016 test.xlsx', sheetname="This Batch")   
 
 assets = ["DDoS_Security_Myths_Busted", "SecCurrent_The_Hunted_Becomes_the_Hunter",\
           "ITHarvest_Report_Security_Analytics__A_Required_Escalation_In_Cyber_Defense",\
@@ -30,8 +23,8 @@ industry = ["Banking/Financial Services", "Cloud Hosting Provider", "Computer Ha
             "Online Gaming", "Pharmaceutical/Medical Devices", "Retail/Online Services", "Utilities"]          
 
             
-def filterReport(unique):
-    a = unique[unique["Country"].isin(["US", "US of America", "UK"])] 
+def filterReport(leads):
+    a = leads[leads["Country"].isin(["US", "US of America", "UK"])] 
     b = a[a["Most Recent Asset Download"].isin(assets)] 
     c = b.dropna(subset=["Role"]) #Role columns has NAs.
     d = c[c["Role"].str.contains('IT|Security')]
@@ -45,6 +38,47 @@ def filterReport(unique):
     result = pd.concat([us, uk])
     return result
               
-result = filterReport(unique)    
-    
-result.to_excel("C:\\Users\\Qi Yi\\Desktop\\result.xlsx") 
+result = filterReport(leads)        
+#result.to_excel("C:\\Users\\Qi Yi\\Desktop\\result.xlsx") 
+
+'''
+Locate missing values
+'''
+newleads = result[result.columns[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]]]
+mvalues = result[newleads.isnull().any(axis=1)]
+mvalues.to_excel("C:\\Users\\Qi Yi\\Desktop\\missing values.xlsx")
+'''
+Find unique values
+'''
+unique_email = result.drop_duplicates(["Email Address"], keep=False)
+len(unique_email) 
+unique_email.to_excel("C:\\Users\\Qi Yi\\Desktop\\unique_email.xlsx")
+
+'''
+Find duplicates
+'''
+duplicate_email = result[result.duplicated(["Email Address"], keep=False)]
+len(duplicate_email) 
+duplicate_email = duplicate_email.sort_values(["Email Address"])
+duplicate_email.to_excel("C:\\Users\\Qi Yi\\Desktop\\duplicate_email.xlsx") 
+                     
+#flag = flag.sort_values(["Email Address"], ascending=True)
+same = duplicate_email[duplicate_email.duplicated(["Lead Source Third Party", "Most Recent Asset Download"], keep=False)]
+len(same)
+same["Last Interesting Moment Date"] = pd.to_datetime(same["Last Interesting Moment Date"])                       
+same = same.sort_values(["Email Address", "Last Interesting Moment Date"])     
+b = same.groupby("Email Address")  
+c = b["Last Interesting Moment Date"].diff()
+same["Days"] = c
+same["Days"] = same["Days"].fillna(method='bfill')
+same_g90 = same[same["Days"] > "90 days"]
+same_l90 = same[same["Days"] < "90 days"]
+len(same_g90)
+len(same_l90)                          
+same_g90.to_excel("C:\\Users\\Qi Yi\\Desktop\\same_G90.xlsx") 
+same_l90.to_excel("C:\\Users\\Qi Yi\\Desktop\\same_L90.xlsx")                          
+          
+                       
+different = duplicate_email.drop_duplicates(["Lead Source Third Party","Most Recent Asset Download"], keep=False)
+len(different)
+different.to_excel("C:\\Users\\Qi Yi\\Desktop\\different venders and assets.xlsx")     
