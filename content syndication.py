@@ -67,7 +67,15 @@ duplicate_email.to_excel("C:\\Users\\Qi Yi\\Desktop\\duplicate_email.xlsx")
 group_email = duplicate_email.groupby(["Email Address"]).size()
 group_email[group_email > 2]
 a = duplicate_email.groupby(["Email Address", "Most Recent Asset Download"]).size()
-duplicate_email[a == 1]
+dif_asset = a[a == 1]
+index = dif_asset.index.tolist()
+def get_list(index):
+    newlist = []
+    for i in range(len(index)):
+        newlist.append(index[i][0])
+    newlist = list(set(newlist))
+    return newlist
+newlist = get_list(index)
 
 #flag = flag.sort_values(["Email Address"], ascending=True)
 same = duplicate_email[duplicate_email.duplicated(["Lead Source Third Party", "Most Recent Asset Download"], keep=False)]
