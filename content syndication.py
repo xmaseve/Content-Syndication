@@ -47,6 +47,8 @@ Locate missing values
 newleads = result[result.columns[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]]]
 mvalues = result[newleads.isnull().any(axis=1)]
 mvalues.to_excel("C:\\Users\\Qi Yi\\Desktop\\missing values.xlsx")
+
+
 '''
 Find unique values
 '''
@@ -61,7 +63,12 @@ duplicate_email = result[result.duplicated(["Email Address"], keep=False)]
 len(duplicate_email) 
 duplicate_email = duplicate_email.sort_values(["Email Address"])
 duplicate_email.to_excel("C:\\Users\\Qi Yi\\Desktop\\duplicate_email.xlsx") 
-                     
+
+group_email = duplicate_email.groupby(["Email Address"]).size()
+group_email[group_email > 2]
+a = duplicate_email.groupby(["Email Address", "Most Recent Asset Download"]).size()
+duplicate_email[a == 1]
+
 #flag = flag.sort_values(["Email Address"], ascending=True)
 same = duplicate_email[duplicate_email.duplicated(["Lead Source Third Party", "Most Recent Asset Download"], keep=False)]
 len(same)
